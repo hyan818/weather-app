@@ -10,7 +10,9 @@ npm install
 npm run dev
 ```
 
-## OpenWeatherMap API
+## API
 
 - [Geocoding API](https://openweathermap.org/api/geocoding-api)
 - [Current Weather API](https://openweathermap.org/current)
+- [Weather Forecast API](https://openweathermap.org/forecast5)
+- [IP-API](https://ip-api.com/docs)
