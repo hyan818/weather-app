@@ -96,3 +96,26 @@ h1 {
 .bold {
   font-weight: 700;
 }
+
+
+.suggestions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  position: absolute;
+  width: 90%;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestions li {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc;
+}
+
+.suggestions li:hover {
+  background: rgba(200, 200, 200, 0.5);
+}
