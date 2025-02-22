@@ -74,8 +74,10 @@ import axios from "axios";
 
 function App() {
   const [data, setData] = useState({});
-  const [location, setLocation] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
+  const [location, setLocation] = useState(""); 
+  const [suggestions, setSuggestions] = useState([]); // Stores location suggestions
+  const [selectedIndex, setSelectedIndex] = useState(-1); // Tracks selected item index
+  
 
   const WEATHER_API_KEY = "e007ab348b01c579572710d941a3a21c";
 
@@ -83,6 +85,7 @@ function App() {
   const fetchSuggestions = async (query) => {
     if (query.length < 2) {
       setSuggestions([]);
+      setSelectedIndex(-1); //added for using arrow keys
       return;
     }
 
@@ -90,6 +93,7 @@ function App() {
     try {
       const response = await axios.get(geoUrl);
       setSuggestions(response.data);
+      setSelectedIndex(-1); //added for using arrow keys. Reset selection when new suggestions load
     } catch (error) {
       console.error("Error fetching location suggestions:", error);
     }
@@ -109,28 +113,62 @@ function App() {
   const handleInputChange = (event) => {
     const query = event.target.value;
     setLocation(query);
-    fetchSuggestions(query);
+    fetchSuggestions(query); //fetch suggestion
   };
 
+   //Handle selecting a location
   const handleSelectLocation = (selectedLocation) => {
     setLocation(selectedLocation);
-    setSuggestions([]);
+    setSuggestions([]); //clear suggestions
+    setSelectedIndex(-1); // added for using arrow keys
     fetchWeather(selectedLocation);
   };
 
+
+
+   // Handle key presses for suggestion navigation
+   const handleKeyDown = (event) => {
+    if (suggestions.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSelectedIndex((prevIndex) =>
+        prevIndex < suggestions.length - 1 ? prevIndex + 1 : prevIndex
+      );
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSelectedIndex((prevIndex) =>
+        prevIndex > 0 ? prevIndex - 1 : 0
+      );
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      if (selectedIndex >= 0) {
+        handleSelectLocation(suggestions[selectedIndex].name);
+      }
+    }
+  };
+
+ 
   return (
     <div className="app">
       <div className="search">
         <input
           value={location}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown} // Attach key event
           placeholder="Enter Location"
           type="text"
         />
         {suggestions.length > 0 && (
           <ul className="suggestions">
             {suggestions.map((item, index) => (
-              <li key={index} onClick={() => handleSelectLocation(item.name)}>
+              <li 
+                key={index} 
+                onMouseEnter={() => setSelectedIndex(index)} // Allow hover selection
+                onMouseLeave={() => setSelectedIndex(-1)} // Reset on leave
+                onClick={() => handleSelectLocation(item.name)}
+                className={index === selectedIndex ? "selected" : ""} // Add selected class
+              >
                 {item.name}, {item.country}
               </li>
             ))}
