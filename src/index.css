@@ -40,19 +40,8 @@ h1 {
   z-index: -1;
 }
 
-.app .search {
-  text-align: center;
-  padding: 1rem;
-}
 
-.app input {
-  padding: 0.7rem 1.5rem;
-  font-size: 1.2rem;
-  border-radius: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.1);
-  color: #f8f8f8;
-}
+
 
 ::placeholder {
   color: #f8f8f8;
@@ -98,24 +87,65 @@ h1 {
 }
 
 
+.app .search {
+  text-align: center;
+  padding: 1rem;
+  position: relative; /* Needed for absolute dropdown positioning */
+  align-items: center; /* Centers search input and dropdown */
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.app input {
+  padding: 0.7rem 1.5rem;
+  font-size: 1.2rem;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8f8f8;
+}
+
+/* Added suggestion drop down box*/
 .suggestions {
   list-style: none;
   padding: 0;
-  margin: 0;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
+  margin: 0; /* Removes extra space */
+  border-radius: 0 0 8px 8px; /* Rounded bottom edges */
   position: absolute;
-  width: 90%;
+  top: 100%; /* Positions dropdown directly below input */
+  left: 50%;
+  transform: translateX(-50%); /* Centers dropdown */
+  width: 300px; /* Matches input width */
   max-height: 200px;
-  overflow-y: auto;
+  overflow-y: visible; 
+  z-index: 9999; /* Ensures dropdown is above other elements */
+  text-align: center;
+  border-top: none; /* Removes gap between input and dropdown */
 }
 
 .suggestions li {
   padding: 10px;
   cursor: pointer;
   border-bottom: 1px solid #ccc;
+  background-color: rgba(97, 87, 87, 0.4); /*drop down background color*/
+  color: #f7f1f1;   /*drop down text color*/
 }
 
 .suggestions li:hover {
-  background: rgba(200, 200, 200, 0.5);
+  background: rgba(0, 123, 255, 0.7);
+  color: white;
 }
+
+.suggestions li.selected {
+  background: rgba(0, 123, 255, 0.9);
+  color: white;
+}
+
+/* Prevents border radius issue when dropdown is visible */
+.search input:focus,
+.search input:not(:placeholder-shown) {
+  border-radius: 25px 25px 0 0;
+}
+
+
