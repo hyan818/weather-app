@@ -15,4 +15,5 @@ npm run dev
 - [Geocoding API](https://openweathermap.org/api/geocoding-api)
 - [Current Weather API](https://openweathermap.org/current)
 - [Weather Forecast API](https://openweathermap.org/forecast5)
-- [IP-API](https://ip-api.com/docs)
+- [IP-GeoLocation](https://ip-api.com/docs)
+- [Public-IP](https://www.ipify.org)
