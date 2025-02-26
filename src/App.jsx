@@ -192,7 +192,6 @@ useEffect(() => {
     }
   };
 
- 
   return (
     <div className="app">
       <div className="search">
