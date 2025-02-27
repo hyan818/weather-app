@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Forecast from "./components/Forecast";
 
@@ -38,6 +38,27 @@ function App() {
       console.error("Error fetching weather data:", error);
     }
   };
+
+  //IP-based detection using ipinfo.io:
+  //free token from ipinfo.io.
+  useEffect(() => {
+    const fetchLocationByIP = async () => {
+      try {
+        const response = await axios.get(
+          "https://ipinfo.io/json?token=1e675b91ebf732",
+        );
+        if (response.data && response.data.city) {
+          const city = response.data.city;
+          setLocation(city);
+          fetchWeather(city);
+        }
+      } catch (error) {
+        console.error("Error fetching location from IP:", error);
+      }
+    };
+
+    fetchLocationByIP();
+  }, []);
 
   const handleInputChange = (event) => {
     const query = event.target.value;
