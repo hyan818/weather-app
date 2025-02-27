@@ -30,9 +30,11 @@ function App() {
   };
 
   // Fetch weather data for a selected location
+  //const fetchWeather = async (lat, lon) => {
   const fetchWeather = async (city) => {
     
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${WEATHER_API_KEY}`;
+    //const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=${WEATHER_API_KEY}`;
     try {
       const response = await axios.get(url);
       setData(response.data);
@@ -42,44 +44,44 @@ function App() {
   };
 
   
-//  // Fetch city name from latitude & longitude
-// const fetchCityName = async (lat, lon) => {
-//   const reverseGeoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${WEATHER_API_KEY}`;
+ // Fetch city name from latitude & longitude
+const fetchCityName = async (lat, lon) => {
+  const reverseGeoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${WEATHER_API_KEY}`;
 
-//   try {
-//     const response = await axios.get(reverseGeoUrl);
-//     if (response.data.length > 0) {
-//       const cityName = response.data[0].name;
-//       setLocation(cityName);
-//       fetchWeather(cityName);
-//     } else {
-//       console.error("No city found for the given coordinates.");
-//     }
-//   } catch (error) {
-//     console.error("Error fetching city name:", error);
-//   }
-// };
+  try {
+    const response = await axios.get(reverseGeoUrl);
+    if (response.data.length > 0) {
+      const cityName = response.data[0].name;
+      setLocation(cityName);
+      fetchWeather(cityName);
+    } else {
+      console.error("No city found for the given coordinates.");
+    }
+  } catch (error) {
+    console.error("Error fetching city name:", error);
+  }
+};
 
-// //IP-based detection using ipinfo.io:
-// //free token from ipinfo.io.
-// useEffect(() => {
-//   const fetchLocationByIP = async () => {
-//     try {
-//       const response = await axios.get("https://ipinfo.io/json?token=1e675b91ebf732");
-//       if (response.data && response.data.city) {
-//         const city = response.data.city;
-//         setLocation(city);
-//         fetchWeather(city);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching location from IP:", error);
-//       // setLocation("New York"); // Fallback city
-//       // fetchWeather("New York");
-//     }
-//   };
+//IP-based detection using ipinfo.io:
+//free token from ipinfo.io.
+useEffect(() => {
+  const fetchLocationByIP = async () => {
+    try {
+      const response = await axios.get("https://ipinfo.io/json?token=1e675b91ebf732");
+      if (response.data && response.data.city) {
+        const city = response.data.city;
+        setLocation(city);
+        fetchWeather(city);
+      }
+    } catch (error) {
+      console.error("Error fetching location from IP:", error);
+      // setLocation("New York"); // Fallback city
+      // fetchWeather("New York");
+    }
+  };
 
-//   fetchLocationByIP();
-// }, []);
+  fetchLocationByIP();
+}, []);
 
 
 
