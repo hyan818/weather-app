@@ -7,8 +7,7 @@ function App() {
   const [location, setLocation] = useState("");
   const [suggestions, setSuggestions] = useState([]); // Stores location suggestions
   const [selectedIndex, setSelectedIndex] = useState(-1); // Tracks selected item index
-
-  const WEATHER_API_KEY = "e007ab348b01c579572710d941a3a21c";
+  const [coordinates, setCoordinates] = useState({});
 
   // Fetch location suggestions from OpenWeather Geolocation API
   const fetchSuggestions = async (query) => {
@@ -18,25 +17,39 @@ function App() {
       return;
     }
 
-    const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${WEATHER_API_KEY}`;
-    try {
-      const response = await axios.get(geoUrl);
-      setSuggestions(response.data);
-      setSelectedIndex(-1); //added for using arrow keys. Reset selection when new suggestions load
-    } catch (error) {
-      console.error("Error fetching location suggestions:", error);
-    }
+    await axios
+      .get(import.meta.env.VITE_OPEN_WEATHER_GEO_URL, {
+        params: {
+          q: query,
+          limit: 5,
+          appid: import.meta.env.VITE_OPEN_WEATHER_API_KEY,
+        },
+      })
+      .then((response) => {
+        setSuggestions(response.data);
+        setSelectedIndex(-1); //added for using arrow keys. Reset selection when new suggestions load
+      })
+      .catch((error) => {
+        console.error("Error fetching location suggestions:", error);
+      });
   };
 
   // Fetch weather data for a selected location
   const fetchWeather = async (city) => {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${WEATHER_API_KEY}`;
-    try {
-      const response = await axios.get(url);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching weather data:", error);
-    }
+    await axios
+      .get(import.meta.env.VITE_OPEN_WEATHER_URL, {
+        params: {
+          q: city,
+          units: "metric",
+          appid: import.meta.env.VITE_OPEN_WEATHER_API_KEY,
+        },
+      })
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching weather data:", error);
+      });
   };
 
   //IP-based detection using ipinfo.io:
@@ -51,6 +64,10 @@ function App() {
           const city = response.data.city;
           setLocation(city);
           fetchWeather(city);
+          setCoordinates({
+            lat: response.data.loc.split(",")[0],
+            lon: response.data.loc.split(",")[1],
+          });
         }
       } catch (error) {
         console.error("Error fetching location from IP:", error);
@@ -68,11 +85,14 @@ function App() {
 
   //Handle selecting a location
   const handleSelectLocation = (selectedLocation) => {
-    console.log(selectedLocation);
-    setLocation(selectedLocation);
+    setLocation(selectedLocation.name);
     setSuggestions([]); //clear suggestions
     setSelectedIndex(-1); // added for using arrow keys
-    fetchWeather(selectedLocation);
+    fetchWeather(selectedLocation.name);
+    setCoordinates({
+      lat: selectedLocation.lat,
+      lon: selectedLocation.lon,
+    });
   };
 
   // Handle key presses for suggestion navigation
@@ -90,7 +110,7 @@ function App() {
     } else if (event.key === "Enter") {
       event.preventDefault();
       if (selectedIndex >= 0) {
-        handleSelectLocation(suggestions[selectedIndex].name);
+        handleSelectLocation(suggestions[selectedIndex]);
       }
     }
   };
@@ -112,7 +132,7 @@ function App() {
                 key={index}
                 onMouseEnter={() => setSelectedIndex(index)} // Allow hover selection
                 onMouseLeave={() => setSelectedIndex(-1)} // Reset on leave
-                onClick={() => handleSelectLocation(item.name)}
+                onClick={() => handleSelectLocation(item)}
                 className={index === selectedIndex ? "selected" : ""} // Add selected class
               >
                 {item.name}, {item.country}
@@ -128,20 +148,20 @@ function App() {
             <p>{data.name}</p>
           </div>
           <div className="temp">
-            {data.main ? <h1>{data.main.temp.toFixed()}°F</h1> : null}
+            {data.main ? <h1>{data.main.temp.toFixed()}°C</h1> : null}
           </div>
           <div className="description">
             {data.weather ? <p>{data.weather[0].main}</p> : null}
           </div>
         </div>
 
-        <Forecast lat="44.34" lon="10.99" />
+        <Forecast lat={coordinates.lat} lon={coordinates.lon} />
 
         {data.name && (
           <div className="bottom">
             <div className="feels">
               {data.main ? (
-                <p className="bold">{data.main.feels_like.toFixed()}°F</p>
+                <p className="bold">{data.main.feels_like.toFixed()}°C</p>
               ) : null}
               <p>Feels Like</p>
             </div>

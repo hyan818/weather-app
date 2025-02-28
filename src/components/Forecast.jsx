@@ -8,6 +8,7 @@ export default function Forecast({ lat, lon }) {
   const [forecasts, setForecasts] = useState([]);
 
   useEffect(() => {
+    if (!lat || !lon) return;
     axios
       .get(import.meta.env.VITE_OPEN_WEATHER_FORECAST_URL, {
         params: {
