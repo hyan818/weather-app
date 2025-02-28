@@ -26,7 +26,16 @@ function App() {
         },
       })
       .then((response) => {
-        setSuggestions(response.data);
+        //setSuggestions(response.data);
+        setSuggestions(
+          response.data.map((item) => ({
+            name: item.name,
+            country: item.country,
+            lat: item.lat,
+            lon: item.lon,
+          }))
+        );
+
         setSelectedIndex(-1); //added for using arrow keys. Reset selection when new suggestions load
       })
       .catch((error) => {
@@ -35,11 +44,14 @@ function App() {
   };
 
   // Fetch weather data for a selected location
-  const fetchWeather = async (city) => {
+  //const fetchWeather = async (city) => {
+  const fetchWeather = async (lat, lon) => {
     await axios
       .get(import.meta.env.VITE_OPEN_WEATHER_URL, {
         params: {
-          q: city,
+          //q: city,
+          lat: lat,
+          lon: lon,
           units: "metric",
           appid: import.meta.env.VITE_OPEN_WEATHER_API_KEY,
         },
@@ -52,22 +64,25 @@ function App() {
       });
   };
 
-  //IP-based detection using ipinfo.io:
-  //free token from ipinfo.io.
+  //IP-based detection using ipinfo.io (free token from ipinfo.io.):
   useEffect(() => {
     const fetchLocationByIP = async () => {
       try {
         const response = await axios.get(
-          "https://ipinfo.io/json?token=1e675b91ebf732",
+          "https://ipinfo.io/json?token=1e675b91ebf732"
         );
-        if (response.data && response.data.city) {
-          const city = response.data.city;
-          setLocation(city);
-          fetchWeather(city);
-          setCoordinates({
-            lat: response.data.loc.split(",")[0],
-            lon: response.data.loc.split(",")[1],
-          });
+        if (response.data && response.data.loc) {
+          // const city = response.data.city;
+          // setLocation(city);
+          // fetchWeather(city);
+          const [lat, lon] = response.data.loc.split(",");
+          setLocation(`${response.data.city}, ${response.data.country}`); // Show City, Country
+          fetchWeather(lat, lon); // Fetch weather with lat/lon
+
+          setCoordinates({ lat, lon });
+          //   lat: response.data.loc.split(",")[0],
+          //   lon: response.data.loc.split(",")[1],
+          // });
         }
       } catch (error) {
         console.error("Error fetching location from IP:", error);
@@ -80,19 +95,25 @@ function App() {
   const handleInputChange = (event) => {
     const query = event.target.value;
     setLocation(query);
-    fetchSuggestions(query); //fetch suggestion
+    fetchSuggestions(query); //fetch suggestion as the user types
   };
 
   //Handle selecting a location
   const handleSelectLocation = (selectedLocation) => {
-    setLocation(selectedLocation.name);
+    //setLocation(selectedLocation.name);
+    const { name, country, lat, lon } = selectedLocation;
+    setLocation(`${name}, ${country}`); // Update location state immediately
+
     setSuggestions([]); //clear suggestions
     setSelectedIndex(-1); // added for using arrow keys
-    fetchWeather(selectedLocation.name);
-    setCoordinates({
-      lat: selectedLocation.lat,
-      lon: selectedLocation.lon,
-    });
+
+    // fetchWeather(selectedLocation.name);
+    fetchWeather(lat, lon);
+
+    setCoordinates({ lat, lon });
+    //   lat: selectedLocation.lat,
+    //   lon: selectedLocation.lon,
+    // });
   };
 
   // Handle key presses for suggestion navigation
@@ -102,7 +123,7 @@ function App() {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setSelectedIndex((prevIndex) =>
-        prevIndex < suggestions.length - 1 ? prevIndex + 1 : prevIndex,
+        prevIndex < suggestions.length - 1 ? prevIndex + 1 : prevIndex
       );
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
