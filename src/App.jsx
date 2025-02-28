@@ -1,13 +1,11 @@
-
 import { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
   const [data, setData] = useState({});
-  const [location, setLocation] = useState(""); 
+  const [location, setLocation] = useState("");
   const [suggestions, setSuggestions] = useState([]); // Stores location suggestions
   const [selectedIndex, setSelectedIndex] = useState(-1); // Tracks selected item index
-  
 
   const WEATHER_API_KEY = "e007ab348b01c579572710d941a3a21c";
 
@@ -22,7 +20,17 @@ function App() {
     const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${WEATHER_API_KEY}`;
     try {
       const response = await axios.get(geoUrl);
-      setSuggestions(response.data);
+      //setSuggestions(response.data);
+
+      setSuggestions(
+        response.data.map((item) => ({
+          name: item.name,
+          country: item.country,
+          lat: item.lat,
+          lon: item.lon,
+        }))
+      );
+
       setSelectedIndex(-1); //added for using arrow keys. Reset selection when new suggestions load
     } catch (error) {
       console.error("Error fetching location suggestions:", error);
@@ -30,9 +38,11 @@ function App() {
   };
 
   // Fetch weather data for a selected location
-  const fetchWeather = async (city) => {
-    
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${WEATHER_API_KEY}`;
+
+  //const fetchWeather = async (city) => {
+  const fetchWeather = async (lat, lon) => {
+    //const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${WEATHER_API_KEY}`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=${WEATHER_API_KEY}`;
     try {
       const response = await axios.get(url);
       setData(response.data);
@@ -41,62 +51,54 @@ function App() {
     }
   };
 
-
- // Fetch city name from latitude & longitude
-const fetchCityName = async (lat, lon) => {
-  const reverseGeoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${WEATHER_API_KEY}`;
-
-  try {
-    const response = await axios.get(reverseGeoUrl);
-    if (response.data.length > 0) {
-      const cityName = response.data[0].name;
-      setLocation(cityName);
-      fetchWeather(cityName);
-    } else {
-      console.error("No city found for the given coordinates.");
-    }
-  } catch (error) {
-    console.error("Error fetching city name:", error);
-  }
-};
-
-//IP-based detection using ipinfo.io:
-//free token from ipinfo.io.
-useEffect(() => {
-  const fetchLocationByIP = async () => {
-    try {
-      const response = await axios.get("https://ipinfo.io/json?token=1e675b91ebf732");
-      if (response.data && response.data.city) {
-        const city = response.data.city;
-        setLocation(city);
-        fetchWeather(city);
+  //IP-based detection using ipinfo.io:
+  //free token from ipinfo.io.
+  useEffect(() => {
+    const fetchLocationByIP = async () => {
+      try {
+        const response = await axios.get(
+          "https://ipinfo.io/json?token=1e675b91ebf732"
+        );
+        if (response.data && response.data.loc) {
+          //const city = response.data.city;
+          const [lat, lon] = response.data.loc.split(",");
+          //setLocation(city);
+          //fetchWeather(city);
+          setLocation(`${response.data.city}, ${response.data.country}`); // Show City, Country
+          fetchWeather(lat, lon); // Fetch weather with lat/lon
+        }
+      } catch (error) {
+        console.error("Error fetching location from IP:", error);
       }
-    } catch (error) {
-      console.error("Error fetching location from IP:", error);
-     
-    }
-  };
+    };
 
-  fetchLocationByIP();
-}, []);
+    fetchLocationByIP();
+  }, []); // Empty dependency array to run only once on mount
 
-
+  //Handle input change for location search
   const handleInputChange = (event) => {
     const query = event.target.value;
     setLocation(query);
-    fetchSuggestions(query); //fetch suggestion
+    fetchSuggestions(query); //fetch suggestion as the user types
   };
 
-   //Handle selecting a location
+  //Handle selecting a location from suggestions
   const handleSelectLocation = (selectedLocation) => {
-    setLocation(selectedLocation);
+    const { name, country, lat, lon } = selectedLocation;
+
+    //setLocation(selectedLocation);
+    setLocation(`${name}, ${country}`); // Update location state immediately
+
     setSuggestions([]); //clear suggestions
     setSelectedIndex(-1); // added for using arrow keys
-    fetchWeather(selectedLocation);
+
+    //fetchWeather(selectedLocation);
+    fetchWeather(lat, lon); // Fetch weather using lat and lon
+    //fetchCityName(lat, lon)
   };
 
-   // Handle key presses for suggestion navigation
-   const handleKeyDown = (event) => {
+  // Handle key presses for suggestion navigation
+  const handleKeyDown = (event) => {
     if (suggestions.length === 0) return;
 
     if (event.key === "ArrowDown") {
@@ -106,13 +108,11 @@ useEffect(() => {
       );
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setSelectedIndex((prevIndex) =>
-        prevIndex > 0 ? prevIndex - 1 : 0
-      );
+      setSelectedIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 0));
     } else if (event.key === "Enter") {
       event.preventDefault();
       if (selectedIndex >= 0) {
-        handleSelectLocation(suggestions[selectedIndex].name);
+        handleSelectLocation(suggestions[selectedIndex]); //suggestions[selectedIndex].name
       }
     }
   };
@@ -130,11 +130,11 @@ useEffect(() => {
         {suggestions.length > 0 && (
           <ul className="suggestions">
             {suggestions.map((item, index) => (
-              <li 
-                key={index} 
+              <li
+                key={index}
                 onMouseEnter={() => setSelectedIndex(index)} // Allow hover selection
                 onMouseLeave={() => setSelectedIndex(-1)} // Reset on leave
-                onClick={() => handleSelectLocation(item.name)}
+                onClick={() => handleSelectLocation(item)} //(item.name)
                 className={index === selectedIndex ? "selected" : ""} // Add selected class
               >
                 {item.name}, {item.country}
@@ -160,7 +160,9 @@ useEffect(() => {
         {data.name && (
           <div className="bottom">
             <div className="feels">
-              {data.main ? <p className="bold">{data.main.feels_like.toFixed()}°F</p> : null}
+              {data.main ? (
+                <p className="bold">{data.main.feels_like.toFixed()}°F</p>
+              ) : null}
               <p>Feels Like</p>
             </div>
             <div className="humidity">
@@ -168,7 +170,9 @@ useEffect(() => {
               <p>Humidity</p>
             </div>
             <div className="wind">
-              {data.wind ? <p className="bold">{data.wind.speed.toFixed()} MPH</p> : null}
+              {data.wind ? (
+                <p className="bold">{data.wind.speed.toFixed()} MPH</p>
+              ) : null}
               <p>Wind Speed</p>
             </div>
           </div>
