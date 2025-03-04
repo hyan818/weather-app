@@ -16,3 +16,4 @@ npm run dev
 - [Current Weather API](https://openweathermap.org/current)
 - [Weather Forecast API](https://openweathermap.org/forecast5)
 - [Public-IP token](https://ipinfo.io/)
+- [Ollama API](https://github.com/ollama/ollama-js)
