@@ -1,0 +1,23 @@
+.recommendationContainer {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.recommendationContainer h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.recommendationContainer ul {
+    list-style: none;
+    padding: 0;
+}
+
+.recommendationContainer li {
+    margin-bottom: 5px;
+}
+
+.recommendationContainer p {
+    font-size: 16px;
+}
