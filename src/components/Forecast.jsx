@@ -1,14 +1,17 @@
 import dayjs from "dayjs";
-import styles from "./Forecast.module.css";
+import "./Forecast.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import Skeleton from "react-loading-skeleton";
 
 export default function Forecast({ lat, lon }) {
   const [forecasts, setForecasts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!lat || !lon) return;
+    setLoading(true);
     axios
       .get(import.meta.env.VITE_OPEN_WEATHER_FORECAST_URL, {
         params: {
@@ -31,30 +34,58 @@ export default function Forecast({ lat, lon }) {
           });
         });
         setForecasts(forecasts);
+        setLoading(false);
       })
       .catch((error) => {
         console.error(error);
+        setLoading(false);
       });
   }, [lat, lon]);
 
+  const skeletonItems = Array(8)
+    .fill()
+    .map((_, index) => (
+      <div className="forecastItem" style={{ padding: "1rem" }} key={index}>
+        <Skeleton width={"4rem"} />
+        <Skeleton
+          width={"4rem"}
+          height={"4rem"}
+          style={{ borderRadius: "50%" }}
+        />
+        <Skeleton width={"3rem"} />
+        <Skeleton width={"2rem"} />
+      </div>
+    ));
+
   return (
-    <div className={styles.forecastContainer}>
-      {forecasts.map((value, index) => {
-        return (
-          <div className={styles.forecastItem} key={index}>
-            <p>{value.day}</p>
-            <p>{value.time}</p>
-            <img src={value.icon} alt={value.description} />
-            <p>{value.temperature} °C</p>
+    <>
+      {loading || forecasts.length == 0 ? (
+        <>
+          <Skeleton width="40%" height={30} style={{ marginBottom: "1rem" }} />
+          <div className="forecastContainer">{skeletonItems}</div>
+        </>
+      ) : (
+        <>
+          <h2>Forecast</h2>
+          <div className="forecastContainer">
+            {forecasts.map((value, index) => {
+              return (
+                <div className="forecastItem" key={index}>
+                  <p className="bold">{value.day}</p>
+                  <p>{value.time}</p>
+                  <img src={value.icon} alt={value.description} />
+                  <p className="bold">{value.temperature} °C</p>
+                </div>
+              );
+            })}
           </div>
-        );
-      })}
-    </div>
+        </>
+      )}
+    </>
   );
 }
 
-// PropTypes validation
 Forecast.propTypes = {
-  lat: PropTypes.number.isRequired,
-  lon: PropTypes.number.isRequired,
+  lat: PropTypes.number.optional,
+  lon: PropTypes.number.optional,
 };
