@@ -1,0 +1,17 @@
+.forecastContainer {
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+  gap: 1rem;
+  /* Hidden scroll bar in x-axis */
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+.forecastItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+}

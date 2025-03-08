@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import ollama from "ollama";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import styles from "./Recommendation.module.css";
+import "./Recommendation.css";
 
 export default function Recommendation({ temp, humidity, wind_speed }) {
   const [recommendation, setRecommendation] = useState({
@@ -79,27 +79,42 @@ export default function Recommendation({ temp, humidity, wind_speed }) {
 
   return (
     <>
-      <section className={styles.recommendationContainer}>
+      <section className="recommendationContainer">
         {loading ? (
-          <>
-            <Skeleton width={"5rem"} enableAnimation={true} />
-            <Skeleton width={"10rem"} enableAnimation={true} />
-            <Skeleton width={"15rem"} enableAnimation={true} />
-            <Skeleton width={"20rem"} enableAnimation={true} />
-          </>
+          <div className="skeleton-wrapper">
+            <Skeleton width="40%" height={30} />
+            <div className="skeleton-list">
+              <Skeleton width="60%" height={20} />
+              <Skeleton width="65%" height={20} />
+              <Skeleton width="55%" height={20} />
+            </div>
+          </div>
         ) : recommendation.clothing ? (
           <>
-            <h2>AI Recommendation</h2>
+            <h2>Weather Tips</h2>
             <ul>
-              <li>Clothing: {recommendation.clothing}</li>
-              <li>Health: {recommendation.health}</li>
-              <li>Outdoor Activity: {recommendation.outdoor_activity}</li>
+              <li>
+                <span className="bold">Clothing: </span>
+                {recommendation.clothing}
+              </li>
+              <li>
+                <span className="bold">Health: </span>
+                {recommendation.health}
+              </li>
+              <li>
+                <span className="bold">Outdoor Activity:</span>{" "}
+                {recommendation.outdoor_activity}
+              </li>
             </ul>
           </>
         ) : (
-          <p>
-            Sorry, fetching AI recommendation failed. Please try again later.
-          </p>
+          <>
+            <h2>Weather Tips</h2>
+            <p>
+              Sorry, fetching weather tips from AI failed. Please try again
+              later.
+            </p>
+          </>
         )}
       </section>
     </>
