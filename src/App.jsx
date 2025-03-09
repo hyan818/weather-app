@@ -125,7 +125,7 @@ function App() {
             value={location}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Enter Location"
+            placeholder="Enter Location / Ingoa taone whakauru"
             type="text"
           />
         </div>
@@ -175,6 +175,7 @@ function App() {
                 <span className="bold">{data.main.feels_like.toFixed()}°C</span>
               </div>
               <span>Feel like</span>
+              <span>Ka rite</span>
             </div>
             <div>
               <div className="icon-text-group">
@@ -182,6 +183,7 @@ function App() {
                 <span className="bold">{data.main.humidity}%</span>
               </div>
               <span>Humidity</span>
+              <span>Haumākū</span>
             </div>
             <div>
               <div className="icon-text-group">
@@ -189,6 +191,7 @@ function App() {
                 <span className="bold">{data.wind.speed.toFixed()} MPH</span>
               </div>
               <span>Wind Speed</span>
+              <span>Tere Hau</span>
             </div>
           </div>
         </section>

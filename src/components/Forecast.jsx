@@ -66,7 +66,8 @@ export default function Forecast({ lat, lon }) {
         </>
       ) : (
         <>
-          <h2>Forecast</h2>
+          <h2> Matapae | Forecast</h2>
+
           <div className="forecastContainer">
             {forecasts.map((value, index) => {
               return (
