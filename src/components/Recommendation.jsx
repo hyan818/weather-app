@@ -21,7 +21,7 @@ export default function Recommendation({ temp, humidity, wind_speed }) {
       setLoading(true);
       await ollama
         .chat({
-          model: "llama3.1:8b",
+          model: "llama3.1",
           messages: [
             {
               role: "system",
@@ -34,43 +34,94 @@ export default function Recommendation({ temp, humidity, wind_speed }) {
               1. "clothing": Recommend appropriate clothing based on the temperature, humidity, and wind speed.
               2. "health": Provide health advice considering temperature extremes, humidity levels, and wind chill effects.
               3. "outdoor_activity": Suggest suitable outdoor activities based on the weather conditions.
+             
+              Translate each value into Māori. The translation should be in parentheses next to the English text.
+              - If the translation is long, place it on the next line with the same indentation.
+              - **Return only the JSON object, with no extra text before or after.**
               `,
             },
+            // {
+            //   role: "system",
+            //   content: `
+            //   For example, if the temperature is 25°C, humidity is 60%, and wind speed is 10 km/h, the response might look like this:
+            //   {
+            //     "clothing": "Light jacket",
+            //     "health": "Stay hydrated and avoid prolonged exposure to direct sunlight.",
+            //     "outdoor_activity": "Go for a walk or jog."
+            //   }
+            // `,
+            // },
+
             {
               role: "system",
-              content: `
-              For example, if the temperature is 25°C, humidity is 60%, and wind speed is 10 km/h, the response might look like this:
+              content: `For example, if the temperature is 25°C, humidity is 60%, and wind speed is 10 km/h, the response should look like this:
               {
-                "clothing": "Light jacket",
-                "health": "Stay hydrated and avoid prolonged exposure to direct sunlight.",
-                "outdoor_activity": "Go for a walk or jog."
-              }
-            `,
+                "clothing": "Light jacket (Kākena māmā)",
+                "health": "Stay hydrated and avoid prolonged exposure to direct sunlight. 
+                (Me inu wai kia noho mākona, ā, karo i te noho roa ki raro i te rā tika.)",
+                "outdoor_activity": "Go for a walk or jog. (Haere ki te hīkoi, ki te oma rānei.)"
+              }`,
             },
-            {
-              role: "system",
-              content:
-                "Do not provide any additional information beyond the JSON object.",
-            },
+
+            // {
+            //   role: "system",
+            //   content:
+            //     "Do not provide any additional information beyond the JSON object.",
+            // },
             {
               role: "user",
               content: `temperature: ${temp}, humidity: ${humidity}, wind speed: ${wind_speed}`,
             },
           ],
         })
+        // .then((response) => {
+        //   const data = JSON.parse(response.message.content);
+        //   setRecommendation((prev) => ({
+        //     ...prev,
+        //     clothing: data.clothing,
+        //     health: data.health,
+        //     outdoor_activity: data.outdoor_activity,
+        //   }));
+        //   setLoading(false);
+        // })
+        // .catch((error) => {
+        //   setLoading(false);
+        //   console.error(error);
+        // });
         .then((response) => {
-          const data = JSON.parse(response.message.content);
-          setRecommendation((prev) => ({
-            ...prev,
-            clothing: data.clothing,
-            health: data.health,
-            outdoor_activity: data.outdoor_activity,
-          }));
+          console.log("Ollama Raw Response:", response.message.content); // Log full response
+
+          try {
+            // Fix JSON format by removing unescaped newlines inside string values
+            const sanitizedResponse = response.message.content
+              .replace(/\n\s+/g, " ") // Remove indentation-based newlines
+              .replace(/:\s*"([^"]*?)\n([^"]*?)"/g, ': "$1 $2"'); // Merge broken multi-line values
+
+            console.log("Sanitized JSON:", sanitizedResponse); // Log sanitized JSON before parsing
+
+            const data = JSON.parse(sanitizedResponse);
+            console.log("Parsed Data:", data); // Log parsed JSON object
+
+            setRecommendation({
+              clothing: data.clothing,
+              health: data.health,
+              outdoor_activity: data.outdoor_activity,
+            });
+          } catch (error) {
+            console.error("JSON Parsing Error:", error);
+            console.log(
+              "Ollama Response (not valid JSON):",
+              response.message.content
+            );
+
+            setRecommendation({
+              clothing: "Unable to fetch clothing recommendation.",
+              health: "Unable to fetch health advice.",
+              outdoor_activity: "Unable to fetch outdoor activity suggestions.",
+            });
+          }
+
           setLoading(false);
-        })
-        .catch((error) => {
-          setLoading(false);
-          console.error(error);
         });
     };
 
@@ -91,7 +142,7 @@ export default function Recommendation({ temp, humidity, wind_speed }) {
           </div>
         ) : recommendation.clothing ? (
           <>
-            <h2>Weather Tips</h2>
+            <h2>Huarere | Weather Tips </h2>
             <ul>
               <li>
                 <span className="bold">Clothing: </span>
