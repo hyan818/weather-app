@@ -45,15 +45,25 @@ export default function Recommendation({ temp, humidity, wind_speed }) {
               role: "system",
               content: `For example, if the temperature is 25°C, humidity is 60%, and wind speed is 10 km/h, the response should look like this:
               {
-                "clothing": "Light jacket (Kākena māmā)",
-                "health": "Stay hydrated and avoid prolonged exposure to direct sunlight. (Me inu wai kia noho mākona, ā, karo i te noho roa ki raro i te rā tika.)",
-                "outdoor_activity": "Go for a walk or jog. (Haere ki te hīkoi, ki te oma rānei.)"
-              }`,
+                "clothing": {
+                  "english": "Light jacket.",
+                  "maori": "Kākena māmā."
+                },
+                "health": {
+                  "english": "Stay hydrated and avoid prolonged exposure to direct sunlight.",
+                  "maori": "Me inu wai kia noho mākona, ā, karo i te noho roa ki raro i te rā tika."
+                },
+                "outdoor_activity":{
+                  "english": "Go for a walk or jog.",
+                  "maori": "Haere ki te hīkoi, ki te oma rānei."
+                } 
+              }
+              `,
             },
             {
               role: "system",
               content:
-                "Do not provide any additional information beyond the JSON object.",
+                "Do not provide any additional information beyond the JSON object. Use a single-line JSON format to avoid breaking the line.",
             },
             {
               role: "user",
@@ -72,11 +82,6 @@ export default function Recommendation({ temp, humidity, wind_speed }) {
             });
           } catch (error) {
             console.error("JSON Parsing Error:", error);
-            setRecommendation({
-              clothing: "Unable to fetch clothing recommendation.",
-              health: "Unable to fetch health advice.",
-              outdoor_activity: "Unable to fetch outdoor activity suggestions.",
-            });
           }
 
           setLoading(false);
@@ -104,15 +109,17 @@ export default function Recommendation({ temp, humidity, wind_speed }) {
             <ul>
               <li>
                 <span className="bold">Clothing: </span>
-                {recommendation.clothing}
+                {recommendation.clothing.english} (
+                {recommendation.clothing.maori})
               </li>
               <li>
                 <span className="bold">Health: </span>
-                {recommendation.health}
+                {recommendation.health.english} ({recommendation.health.maori})
               </li>
               <li>
                 <span className="bold">Outdoor Activity:</span>{" "}
-                {recommendation.outdoor_activity}
+                {recommendation.outdoor_activity.english} (
+                {recommendation.outdoor_activity.maori})
               </li>
             </ul>
           </>
